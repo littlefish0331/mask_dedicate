@@ -28,20 +28,36 @@
   - [https://taiwancanhelp.com.tw/api/mask?date=2020/04/29&show=1000](https://taiwancanhelp.com.tw/api/mask?date=2020/04/29&show=1000)
 - [健康保險資料開放服務 - 口罩響應人道援助之前1日同意援助明細清單](https://data.nhi.gov.tw/Datasets/DatasetDetail.aspx?id=661&Mid=SHEILA)
 
-- 資料儲存公司本機，檔名為日期
-- 資料儲存到公司本機資料庫
+- 資料儲存公司本機
+  - 每日的紀錄，檔名為日期
+  - 每日的summary，放在 dailysummary.csv
+- 資料儲存到公司本機資料庫(尚未執行)
 
 ## 資料觀察
 
-- 每日更新，時間大約是凌晨，所以今天最多只能爬到昨天的資料
+- 資料每日更新時間約為 11:00 am (UTC+8)，統計截至前一日 23:59 前登錄的資料。所以今天最多只能爬到昨天為止的資料。
 - 格式json
-- mask_dedicate_detail.csv 欄位 [pid, date, name, count, created]→[pid, date, name, count]
-  - pid: 為每次捐贈的流水號，即使同一個人也不會依樣，就是一直編號下去。(十六進位)
+- mask_dedicate_detail.csv 欄位 [_id, date, name, count,_created]→[_id, date, name, count]
+  - _id: 為每次捐贈的流水號，即使同一個人也不會依樣，就是一直編號下去。(十六進位)
   - name: 缺失就為 Anonymous
-  - created: 是每天資料庫更新時間。
+  - _created: 是每天資料庫更新時間，並非捐贈的時間，所以刪去。
 - mask_dedicate_dailysummary.csv 欄位 [date, total_masks, total_dedicators]
+
+## 步驟
+
+- 爬取 json 資料
+- 開始時間2020/04/27
+- 每次1000筆
+- 資料整理
+- 休息0.5秒
+- 爬取下一頁直到結束。沒有下一頁的話，吐回的結果會直接少掉 next, next_api 這些節點。is.null(response$data$next_api)
+- 最後結束時，抓取 daily summary
+- 整理存檔
+- 下一天。之後改排程為每天中午1200執行。
+  - 因為有 daily summary，所以只要去隊已經爬過的時間，就可以知道還有哪些日期要爬取。
 
 ## 技術學習
 
 - query show 的筆數可以自動調整，但基本上不會抓太大。先設定每次1000筆。
 - 學習接續使用 &next 的參數，直到爬取結束。
+- 紀錄有哪些天的資料已經爬過了

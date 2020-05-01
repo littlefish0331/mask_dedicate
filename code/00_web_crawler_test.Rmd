@@ -1,0 +1,177 @@
+---
+title: "00_web_crawler"
+author: "Author: [Steve, Yu](https://github.com/littlefish0331)"
+date: "`r Sys.setlocale('LC_TIME', 'English'); format(Sys.time(), '%Y %b %d %a, %H:%M:%S')`" 
+output:
+  rmdformats::readthedown:
+    css: style.css
+    self_contained: TRUE
+    thumbnails: FALSE
+    lightbox: TRUE
+    gallery: FALSE
+    highlight: tango #探戈橘
+    code_folding: show
+    toc_depth: 3
+---
+
+```{r setup, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+rm(list = ls()); gc()
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(data.table)
+library(jsonlite)
+library(lubridate)
+knitr::opts_chunk$set(
+	# 這邊是針對所有chunk的設定
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+---
+
+# 爬蟲
+
+簡單try一下
+
+```{r}
+# ---
+# 爬取 josn 資料
+# url <- "https://taiwancanhelp.com.tw/api/mask?date=2020/04/30&show=10000&next=5eac481be4b003bc78156fd8"
+date_today <- "2020/04/27"
+url <- paste0("https://taiwancanhelp.com.tw/api/mask", "?date=", date_today, "&show=1000")
+response = fromJSON(url)
+
+# ---
+# 有無爬取成功
+# 日期
+response$status
+response$data$date
+
+# 下一頁的參數
+response$data$`next`
+response$data$next_api
+
+# daily summary
+response$data$total_masks
+response$data$total_dedicators
+
+# ---
+# 這次查詢的資料
+response$data$list
+```
+
+- 爬取 json 資料
+- 開始時間2020/04/27
+- 每次1000筆
+- 資料整理
+- 休息0.5秒
+- 爬取下一頁直到結束
+- 最後結束時，抓取 daily summary
+
+```{r}
+# date_today <- Sys.time() %>% substring(., 1, 10) %>% gsub("-", "/", .)
+date_today <- "2020/04/27"
+
+a <- Sys.time()
+detail <- list()
+i <- 1
+keep_go <- 1
+url <- paste0("https://taiwancanhelp.com.tw/api/mask", "?date=", date_today, "&show=1000")
+while(keep_go==1){
+  response = fromJSON(url)
+  detail[[i]] <- response$data$list %>% setDT %>% .[, !"_created"]
+  i <- i+1
+  
+  # ---
+  if (is.null(response$data$next_api)) {
+    keep_go <- 0
+    dailysummary <- data.table(date = response$data$date, 
+                               total_masks = response$data$total_masks, 
+                               total_dedicators = response$data$total_dedicators)
+  }
+  else url <- url %>% gsub("(.*)/api.*", paste0("\\1", response$data$next_api), .)
+  
+  # ---
+  Sys.sleep(0.5)
+  
+}
+b <- Sys.time()
+b-a #Time difference of 2.202728 mins
+```
+
+- 整理存檔
+- 下一天。之後改排程為每天早上0500執行。
+
+```{r}
+# ---
+detail_all <- detail %>% rbindlist()
+nn <- paste0("detail_", substring(Sys.time(), 1, 10), ".csv")
+fwrite(x = detail_all, file = paste0("../data/", nn), row.names = F)
+
+# ---
+# fwrite(x = dailysummary, file = "../data/dailysummary.csv", row.names = F, append = T)
+tmp <- fread("../data/dailysummary.csv")
+dailysummary_add <- list(tmp, dailysummary) %>% rbindlist()
+fwrite(x = dailysummary_add, file = "../data/dailysummary.csv", row.names = F)
+```
+
+---
+
+# 統整
+
+```{r}
+# 現在還不用排程，所以先用輸入日期的方式
+# date_today <- Sys.time() %>% substring(., 1, 10) %>% ymd() %>% `-`(1) %>% gsub("-", "/", .)
+date_today <- "2020/04/28"
+
+a <- Sys.time()
+detail <- list()
+i <- 1
+keep_go <- 1
+url <- paste0("https://taiwancanhelp.com.tw/api/mask", "?date=", date_today, "&show=1000")
+while(keep_go==1){
+  response = fromJSON(url)
+  detail[[i]] <- response$data$list %>% setDT %>% .[, !"_created"]
+  i <- i+1
+  
+  # ---
+  if (is.null(response$data$next_api)) {
+    keep_go <- 0
+    dailysummary <- data.table(date = response$data$date, 
+                               total_masks = response$data$total_masks, 
+                               total_dedicators = response$data$total_dedicators)
+  }
+  else url <- url %>% gsub("(.*)/api.*", paste0("\\1", response$data$next_api), .)
+  
+  # ---
+  Sys.sleep(0.5)
+  
+}
+b <- Sys.time()
+b-a #Time difference of 2.202728 mins
+
+# ---
+detail_all <- detail %>% rbindlist()
+nn <- paste0("detail_", substring(Sys.time(), 1, 10), ".csv")
+fwrite(x = detail_all, file = paste0("../data/", nn), row.names = F)
+
+# ---
+# fwrite(x = dailysummary, file = "../data/dailysummary.csv", row.names = F, append = T)
+if (file.exists("../data/dailysummary.csv")){
+  tmp <- fread("../data/dailysummary.csv")
+} else {
+  tmp <- NULL
+}
+dailysummary_add <- list(tmp, dailysummary) %>% rbindlist()
+fwrite(x = dailysummary_add, file = "../data/dailysummary.csv", row.names = F)
+```
+
+
+---
+
+# END
+
+
