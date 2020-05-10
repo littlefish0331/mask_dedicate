@@ -1,5 +1,5 @@
 rm(list = ls()); gc()
-setwd("E:/NCHC/project_big/mask_dedicate/")
+setwd("E:/NCHC/project2020/mask_dedicate/")
 library(dplyr)
 library(data.table)
 library(jsonlite)

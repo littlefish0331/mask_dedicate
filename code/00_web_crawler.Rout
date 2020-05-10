@@ -30,7 +30,7 @@ See: https://mran.microsoft.com/.
          used (Mb) gc trigger (Mb) max used (Mb)
 Ncells 255763 13.7     615680 32.9   462609 24.8
 Vcells 407720  3.2    8388608 64.0  1611356 12.3
-> setwd("E:/NCHC/project_big/mask_dedicate/")
+> setwd("E:/NCHC/project2020/mask_dedicate/")
 > library(dplyr)
 
 Attaching package: 'dplyr'
@@ -115,11 +115,6 @@ The following object is masked from 'package:base':
 +   # ---
 +   fwrite(x = res$dailysummary, file = "./data/dailysummary.csv", row.names = F, append = T)
 + }
-Warning messages:
-1: In `[.data.table`(., , !"_created") :
-  column(s) not removed because not found: _created
-2: In fwrite(x = detail_all, file = paste0("./data/", nn), row.names = F) :
-  Input has no columns; creating an empty file at './data/detail_2020-05-01.csv' and exiting.
 > 
 > 
 > # ---
@@ -132,4 +127,4 @@ Warning messages:
 > 
 > proc.time()
    user  system elapsed 
-   0.95    0.17   31.37 
+   0.76    0.25    9.54 
