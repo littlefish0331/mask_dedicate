@@ -28,8 +28,8 @@ See: https://mran.microsoft.com/.
 
 > rm(list = ls()); gc()
          used (Mb) gc trigger (Mb) max used (Mb)
-Ncells 255763 13.7     615680 32.9   462609 24.8
-Vcells 407720  3.2    8388608 64.0  1611356 12.3
+Ncells 255781 13.7     615680 32.9   462654 24.8
+Vcells 407730  3.2    8388608 64.0  1611651 12.3
 > setwd("E:/NCHC/project2020/mask_dedicate/")
 > library(dplyr)
 
@@ -61,9 +61,9 @@ The following objects are masked from 'package:data.table':
     hour, isoweek, mday, minute, month, quarter, second, wday, week,
     yday, year
 
-The following object is masked from 'package:base':
+The following objects are masked from 'package:base':
 
-    date
+    date, intersect, setdiff, union
 
 > 
 > # ---
@@ -127,4 +127,4 @@ The following object is masked from 'package:base':
 > 
 > proc.time()
    user  system elapsed 
-   0.60    0.17    3.25 
+   0.68    0.18    8.75 
